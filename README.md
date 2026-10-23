@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="client/public/pipes-logo.png" alt="Pipes — deployment dashboard" width="360" />
+</p>
+
 # Pipes
 
 Panel privado de despliegues manuales y automáticos mediante webhooks de GitHub y GitLab para aplicaciones Node.js, Laravel y WordPress en el mismo servidor Linux. API Fastify y dashboard React, ambos con TypeScript; Tailwind CSS, Axios, React Hook Form y SQLite.
