@@ -1,15 +1,15 @@
 [Unit]
-Description=LucuDeploy application deployment panel
+Description=pipes application deployment panel
 After=network.target
 
 [Service]
 Type=simple
-User=lucudeploy
+User=pipes
 Group=deployers
-WorkingDirectory=/opt/lucudeploy
-EnvironmentFile=/etc/lucudeploy.env
+WorkingDirectory=/opt/pipes
+EnvironmentFile=/etc/pipes.env
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/node /opt/lucudeploy/dist/server/main.js
+ExecStart=/usr/bin/node /opt/pipes/dist/server/main.js
 Restart=on-failure
 RestartSec=5
 KillMode=control-group
@@ -19,7 +19,7 @@ UMask=0077
 NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
-ReadWritePaths=/var/lib/lucudeploy /srv/apps
+ReadWritePaths=/var/lib/pipes /srv/apps
 ProtectHome=yes
 
 [Install]

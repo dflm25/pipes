@@ -12,6 +12,7 @@ import { ApiError, projectSchema, parseInput, readRecipe } from "./yaml.js";
 import { token, verifyPassword } from "./auth.js";
 import { Runner } from "./runner.js";
 import { readLogs } from "./logs.js";
+import { registerWebhooks } from "./webhooks.js";
 export async function createApp(
   config: Config,
   options: { now?: () => number; startRunner?: boolean } = {},
@@ -40,13 +41,11 @@ export async function createApp(
       error.statusCode >= 400 && error.statusCode < 500
         ? error.statusCode
         : 503;
-    reply
-      .code(code)
-      .send({
-        message:
-          code === 503 ? "Servicio temporalmente no disponible" : error.message,
-        fields: error.fields,
-      });
+    reply.code(code).send({
+      message:
+        code === 503 ? "Servicio temporalmente no disponible" : error.message,
+      fields: error.fields,
+    });
   });
   const sessions = new WeakMap<FastifyRequest, Row>();
   const session = (req: FastifyRequest) => {
@@ -65,7 +64,12 @@ export async function createApp(
     if (!req.url.startsWith("/api")) return;
     reply.header("Cache-Control", "no-store");
     const url = req.url.split("?")[0];
-    if (url === "/api/login") return;
+    if (
+      url === "/api/login" ||
+      (req.method === "POST" &&
+        req.routeOptions.config.webhookReceiver === true)
+    )
+      return;
     const row = session(req);
     sessions.set(req, row);
     if (
@@ -74,6 +78,7 @@ export async function createApp(
     )
       throw new ApiError(403, "Token de seguridad inválido; recarga la sesión");
   });
+  await registerWebhooks(app, db, runner);
   app.post("/api/login", async (req, reply) => {
     const current = now();
     let attempt = attempts.get(req.ip);

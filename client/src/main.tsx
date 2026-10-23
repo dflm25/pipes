@@ -296,7 +296,7 @@ function DeploymentDetail({ id, onBack }: { id: string; onBack: () => void }) {
       </button>
       <div className="section-head">
         <div>
-          <p className="eyebrow">EJECUCIÓN MANUAL</p>
+          <p className="eyebrow">EJECUCIÓN DE DESPLIEGUE</p>
           <h1>Detalle del despliegue</h1>
           <code>{id}</code>
         </div>
@@ -456,7 +456,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             <i /> Servidor local
           </div>
           <p>
-            Despliegues manuales
+            Manual + webhooks
             <br />
             Configuración con YAML
           </p>
@@ -563,6 +563,20 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                   Los cambios se leen antes de cada ejecución.
                 </span>
               </div>
+              <div className="project-config">
+                <span className="eyebrow">WEBHOOK GITHUB</span>
+                <code className="webhook-path">
+                  /api/webhooks/github/{project.id}
+                </code>
+                <span className="muted">Se habilita en el archivo YAML.</span>
+              </div>
+              <div className="project-config">
+                <span className="eyebrow">WEBHOOK GITLAB</span>
+                <code className="webhook-path">
+                  /api/webhooks/gitlab/{project.id}
+                </code>
+                <span className="muted">Se habilita en el archivo YAML.</span>
+              </div>
               <div className="table-title">
                 <h2>Historial de despliegues</h2>
                 <span className="muted">Últimos intentos y resultados</span>
@@ -583,7 +597,14 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                       <tr key={j.id}>
                         <td className="mono">
                           {j.id.slice(0, 8)}{" "}
-                          <span className="muted">· manual</span>
+                          <span className="muted">
+                            ·{" "}
+                            {j.origin === "github"
+                              ? "GitHub"
+                              : j.origin === "gitlab"
+                                ? "GitLab"
+                                : "manual"}
+                          </span>
                         </td>
                         <td>
                           <Badge status={j.status} />
@@ -768,7 +789,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               </div>
               <div className="bottom-note">
                 <span>↳ Configuración declarativa. Ejecuciones trazables.</span>
-                <span>LOCAL / MANUAL</span>
+                <span>LOCAL / YAML</span>
               </div>
             </>
           )}

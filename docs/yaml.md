@@ -1,6 +1,6 @@
 # Contrato deploy.yml, versión 1
 
-Campos superiores obligatorios: `version: 1`, `type: node|laravel|wordpress` y `steps` (1–100 pasos). El tipo debe coincidir con el proyecto. Claves desconocidas, duplicados, etiquetas y alias se rechazan. Tamaño máximo: 256 KiB.
+Campos superiores obligatorios: `version: 1`, `type: node|laravel|wordpress` y `steps` (1–100 pasos). Se admite bloques opcionales `github` y `gitlab` con `repository`, `branch` y `secretEnv`; consulta el README para activar el webhook. El tipo debe coincidir con el proyecto. Claves desconocidas, duplicados, etiquetas y alias se rechazan. Tamaño máximo: 256 KiB.
 
 Cada paso contiene:
 

@@ -1006,3 +1006,8 @@ select:focus-visible {
     width: 160px;
   }
 }
+
+.webhook-path {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}

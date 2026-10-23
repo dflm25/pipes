@@ -6,8 +6,8 @@ export class Store {
   db: DatabaseSync;
   constructor(dir: string) {
     mkdirSync(dir, { recursive: true, mode: 0o700 });
-    this.db = new DatabaseSync(path.join(dir, "lucudeploy.sqlite"));
-    chmodSync(path.join(dir, "lucudeploy.sqlite"), 0o600);
+    this.db = new DatabaseSync(path.join(dir, "pipes.sqlite"));
+    chmodSync(path.join(dir, "pipes.sqlite"), 0o600);
     this.db.exec(
       "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;",
     );
@@ -27,6 +27,51 @@ export class Store {
       PRAGMA user_version=1;
       COMMIT;
     `);
+    if (
+      Number(
+        (this.db.prepare("PRAGMA user_version").get() as Row).user_version,
+      ) < 2
+    ) {
+      this.db.exec(`
+        BEGIN IMMEDIATE;
+        CREATE TABLE webhook_deliveries (
+          projectId TEXT NOT NULL REFERENCES projects(id),
+          delivery TEXT NOT NULL,
+          payloadHash TEXT NOT NULL,
+          deploymentId TEXT NOT NULL,
+          created INTEGER NOT NULL,
+          PRIMARY KEY(projectId, delivery),
+          UNIQUE(projectId, payloadHash)
+        );
+        PRAGMA user_version=2;
+        COMMIT;
+      `);
+    }
+    if (
+      Number(
+        (this.db.prepare("PRAGMA user_version").get() as Row).user_version,
+      ) < 3
+    ) {
+      this.db.exec(`
+        BEGIN IMMEDIATE;
+        ALTER TABLE webhook_deliveries RENAME TO webhook_deliveries_v2;
+        CREATE TABLE webhook_deliveries (
+          projectId TEXT NOT NULL REFERENCES projects(id),
+          provider TEXT NOT NULL CHECK(provider IN ('github','gitlab')),
+          delivery TEXT NOT NULL,
+          payloadHash TEXT NOT NULL,
+          deploymentId TEXT NOT NULL,
+          created INTEGER NOT NULL,
+          PRIMARY KEY(projectId, provider, delivery),
+          UNIQUE(projectId, provider, payloadHash)
+        );
+        INSERT INTO webhook_deliveries(projectId,provider,delivery,payloadHash,deploymentId,created)
+          SELECT projectId,'github',delivery,payloadHash,deploymentId,created FROM webhook_deliveries_v2;
+        DROP TABLE webhook_deliveries_v2;
+        PRAGMA user_version=3;
+        COMMIT;
+      `);
+    }
   }
   all(sql: string, ...values: any[]): Row[] {
     return this.db.prepare(sql).all(...values) as Row[];

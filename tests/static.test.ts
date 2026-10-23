@@ -7,7 +7,7 @@ import os from "node:os";
 test("dashboard compilado sirve navegación directa y API no devuelve HTML", async () => {
   const { createApp } = await import("../dist/server/app.js");
   const { loadConfig } = await import("../dist/server/config.js");
-  const base = mkdtempSync(path.join(os.tmpdir(), "lucudeploy-static-"));
+  const base = mkdtempSync(path.join(os.tmpdir(), "pipes-static-"));
   mkdirSync(path.join(base, "apps"));
   const { app } = await createApp(
     loadConfig({

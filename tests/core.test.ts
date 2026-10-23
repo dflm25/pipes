@@ -21,7 +21,7 @@ import { Redactor, LogWriter, readLogs } from "../server/logs.js";
 import { createApp } from "../server/app.js";
 import { passwordHash } from "../server/auth.js";
 const temp = () =>
-  realpathSync(mkdtempSync(path.join(os.tmpdir(), "lucudeploy-test-")));
+  realpathSync(mkdtempSync(path.join(os.tmpdir(), "pipes-test-")));
 function fixture() {
   const base = temp();
   mkdirSync(path.join(base, "apps"));

@@ -74,7 +74,14 @@ export class Runner {
       );
     return root;
   }
-  accept(project: Row) {
+  accept(
+    project: Row,
+    trigger?: {
+      provider?: "github" | "gitlab";
+      delivery: string;
+      payloadHash: string;
+    },
+  ) {
     if (this.fatal || this.stopped)
       throw new ApiError(503, "Ejecutor no disponible");
     const root = this.validateRoot(project);
@@ -89,14 +96,25 @@ export class Runner {
       if (active)
         throw new ApiError(409, `Ya existe una ejecución activa: ${active.id}`);
       this.db.run(
-        "INSERT INTO deployments(id,projectId,snapshot,hash,status,created) VALUES(?,?,?,?,?,?)",
+        "INSERT INTO deployments(id,projectId,snapshot,hash,status,created,origin) VALUES(?,?,?,?,?,?,?)",
         id,
         project.id,
         snapshot,
         createHash("sha256").update(snapshot).digest("hex"),
         "pending",
         Date.now(),
+        trigger ? (trigger.provider ?? "github") : "manual",
       );
+      if (trigger)
+        this.db.run(
+          "INSERT INTO webhook_deliveries(projectId,delivery,payloadHash,deploymentId,created,provider) VALUES(?,?,?,?,?,?)",
+          project.id,
+          trigger.delivery,
+          trigger.payloadHash,
+          id,
+          Date.now(),
+          trigger.provider ?? "github",
+        );
       recipe.steps.forEach((s, i) =>
         this.db.run(
           "INSERT INTO steps(deploymentId,position,name,status) VALUES(?,?,?,?)",
@@ -318,6 +336,10 @@ export class Runner {
       removeLogs(path.join(this.config.dataDir, "logs"), job.id);
       this.db.run("DELETE FROM deployments WHERE id=?", job.id);
     }
+    this.db.run(
+      "DELETE FROM webhook_deliveries WHERE created<?",
+      now - Math.max(30, this.config.retentionDays) * 86400000,
+    );
     this.db.run("DELETE FROM sessions WHERE expires<?", now);
   }
   async close() {

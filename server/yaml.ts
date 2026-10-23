@@ -42,6 +42,36 @@ const stepSchema = z
   .strict();
 export const recipeSchema = z
   .object({
+    github: z
+      .object({
+        repository: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
+        branch: z
+          .string()
+          .min(1)
+          .max(255)
+          .refine(
+            (value) =>
+              !value.startsWith("refs/") && !/[\s~^:?*\[\\]/.test(value),
+          ),
+        secretEnv: z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/),
+      })
+      .strict()
+      .optional(),
+    gitlab: z
+      .object({
+        repository: z.string().regex(/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)+$/),
+        branch: z
+          .string()
+          .min(1)
+          .max(255)
+          .refine(
+            (value) =>
+              !value.startsWith("refs/") && !/[\s~^:?*\[\\]/.test(value),
+          ),
+        secretEnv: z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/),
+      })
+      .strict()
+      .optional(),
     version: z.literal(1),
     type: z.enum(["node", "laravel", "wordpress"]),
     steps: z.array(stepSchema).min(1).max(100),
