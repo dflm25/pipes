@@ -1,0 +1,21 @@
+version: 1
+type: laravel
+steps:
+  - id: update
+    command: git
+    args: [pull, --ff-only, origin, main]
+  - id: dependencies
+    command: composer
+    args: [install, --no-dev, --prefer-dist, --no-interaction, --optimize-autoloader]
+  # Migraciones: agregar explícitamente solo después de verificar un respaldo.
+  # No activar mantenimiento sin un procedimiento manual de recuperación.
+  - id: optimize
+    command: php
+    args: [artisan, optimize]
+  - id: restart-workers
+    command: php
+    args: [artisan, queue:restart]
+  - id: verify
+    command: curl
+    args: [--fail, --silent, --show-error, https://example.com/up]
+    timeoutSeconds: 30

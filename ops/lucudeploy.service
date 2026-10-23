@@ -1,0 +1,26 @@
+[Unit]
+Description=LucuDeploy application deployment panel
+After=network.target
+
+[Service]
+Type=simple
+User=lucudeploy
+Group=deployers
+WorkingDirectory=/opt/lucudeploy
+EnvironmentFile=/etc/lucudeploy.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /opt/lucudeploy/dist/server/main.js
+Restart=on-failure
+RestartSec=5
+KillMode=control-group
+TimeoutStopSec=20
+SendSIGKILL=yes
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/lucudeploy /srv/apps
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

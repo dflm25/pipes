@@ -1,0 +1,19 @@
+version: 1
+type: node
+steps:
+  - id: update
+    command: git
+    args: [pull, --ff-only, origin, main]
+  - id: dependencies
+    command: npm
+    args: [ci]
+  - id: build
+    command: npm
+    args: [run, build]
+  - id: restart
+    command: pm2
+    args: [reload, example-app, --update-env]
+  - id: verify
+    command: curl
+    args: [--fail, --silent, --show-error, http://127.0.0.1:3001/health]
+    timeoutSeconds: 30

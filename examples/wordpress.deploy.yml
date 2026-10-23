@@ -1,0 +1,11 @@
+version: 1
+type: wordpress
+steps:
+  # Se asume un repo del tema personalizado, no de toda la instalación.
+  - id: update
+    command: git
+    args: [pull, --ff-only, origin, main]
+  - id: verify
+    command: php
+    args: [-l, functions.php]
+    timeoutSeconds: 30
